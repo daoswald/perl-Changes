@@ -1,0 +1,19 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+use Mojo::UserAgent;
+use IO::Pager;
+
+my $distribution = shift @ARGV;
+die "Need a module or distribution name.\n" unless length $distribution;
+
+$distribution =~ s/::/-/g;
+
+my $api_url = 'https://fastapi.metacpan.org/v1/changes/';
+my $res     = Mojo::UserAgent->new->get($api_url . $distribution)->result;
+
+die "Unable to retrieve $distribution:\n(" . $res->code . ' ' . $res->message . ")\n"
+    if $res->code ne '200';
+
+IO::Pager->new->print($res->json('/content') . "\n");
